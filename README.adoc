@@ -1,0 +1,47 @@
+= Rademacher Workdir Template
+
+To use it, you need to have the prerequisites for Yocto fulfilled and additionally `docbook2x` installed.
+
+== Getting the source
+
+Create yourself a bsp directory with a sources subdirectory in it and clone the source repositories as well as the workdir template
+
+[source,console]
+$ mkdir -p rdm-community-bsp/sources
+$ cd rdm-community-bsp
+$ git clone -b master https://github.com/rdm-dev/yocto-curie-workdir.git rdm-yocto-workdir
+$ cd sources
+$ for rep in poky meta-openembedded meta-fsl-arm meta-fsl-arm-extra meta-fsl-demos meta-browser meta-cpan meta-java meta-jens; do \
+  git clone --branch master https://github.com/rdm-dev/${rep}; done
+
+== Preparing your environment
+
+Append `. ~/rdm-community-bsp/sources/meta-jens/scripts/bashrc` to your `.bashrc`, plus `. ~/perl5/perlbrew/etc/bashrc` if you want use https://github.com/rehsack/Packager-Utils to manage `meta-cpan`.
+
+Create yourself a `${HOME}/.oe` directory for local extension to `oe_builddir` and place two files in it:
+
+`${HOME}/.oe/init`::
+
+[source,shell]
+__oe_prepend_path "`dirname ${OEROOT}`/meta-jens/scripts"
+__oe_append_extrawhite "WANTED_ROOT_DEV"
+
+`${HOME}/.oe/down`::
+
+[source,shell]
+__oe_remove_path "`dirname ${OEROOT}`/meta-jens/scripts"
+__oe_remove_extrawhite "WANTED_ROOT_DEV"
+
+Now source `. ~/rdm-community-bsp/sources/meta-jens/scripts/bashrc` manually, `exec bash -l` or whatever you need to apply the environmental changes.
+
+== Start first build
+
+[source,console]
+$ oe_builddir use ~/rdm-community-bsp/rdm-yocto-workdir
+$ mkimgs rdm-xbmc-image
+
+Want to have an image for USB-Stick to compile z-way-server for HP1?
+
+[source,console]
+$ oe_builddir use ~/rdm-community-bsp/rdm-yocto-workdir
+$ WANTED_ROO_DEV=usb MACHINE=bohr mkimgs rdm-zway-dev-image
